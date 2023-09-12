@@ -1,0 +1,27 @@
+libname zzz "D:\SAS\SASlibrary";
+data zzz.ss_for_NI;
+	keep alpha beta sd r delta margin power n;
+	input alpha beta sd r delta margin;
+	z_alpha=probit(1-alpha);
+	z_beta=probit(1-beta);
+	n0=ceil((1+1/r)*sd**2*(z_alpha+z_beta)**2/(margin-delta)**2);
+
+	do until(power>=(1-beta));
+		t=tinv(1-alpha, n0*(r+1)-2);
+		tao=(margin-delta)*sqrt(r*n0)/(sd*sqrt(r+1));
+
+		if tao>20 then
+			tao=20;
+		else if tao<-20 then
+			tao=-20;
+		power=1-probt(t, n0*(r+1)-2, tao);
+		n0=n0+1;
+	end;
+	n=n0-1;
+	output;
+	cards;
+0.025 0.10 6 1 0    1.5
+0.025 0.10 6 1 -0.5 1.5
+0.025 0.10 6 1 0.5  1.5
+;
+run;
